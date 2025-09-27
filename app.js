@@ -27,12 +27,27 @@ request.onerror = function(e) {
 };
 
 // Convert image to base64
-function toBase64(file) {
+function resizeImage(file, maxWidth = 200, maxHeight = 200) {
     return new Promise((resolve, reject) => {
+        const img = new Image();
         const reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
+        reader.onload = e => img.src = e.target.result;
         reader.onerror = error => reject(error);
+        img.onload = () => {
+            let { width, height } = img;
+            if (width > maxWidth || height > maxHeight) {
+                const ratio = Math.min(maxWidth / width, maxHeight / height);
+                width *= ratio;
+                height *= ratio;
+            }
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL("image/jpeg", 0.8)); // 0.8 = quality
+        };
     });
 }
 
@@ -44,7 +59,7 @@ form.addEventListener("submit", async function(e){
     const imageFile = document.getElementById("image").files[0];
 
     let imageData = null;
-    if(imageFile) imageData = await toBase64(imageFile);
+    if(imageFile) imageData = await resizeImage(imageFile, 200, 200);
 
     const tx = db.transaction("items", "readwrite");
     const store = tx.objectStore("items");
@@ -100,6 +115,8 @@ function displayItems() {
                 if(item.image) {
                     const img = document.createElement("img");
                     img.src = item.image;
+                    img.style.cursor = "pointer";
+                    img.onclick = () => openImage(item.image);
                     infoDiv.appendChild(img);
                 }
 
@@ -149,3 +166,38 @@ if('serviceWorker' in navigator) {
         console.log('Service Worker registered');
     });
 }
+
+// Modal for image zoom
+const modal = document.createElement("div");
+modal.id = "image-modal";
+modal.style.display = "none";
+modal.style.position = "fixed";
+modal.style.zIndex = "999";
+modal.style.left = "0";
+modal.style.top = "0";
+modal.style.width = "100%";
+modal.style.height = "100%";
+modal.style.backgroundColor = "rgba(0,0,0,0.8)";
+modal.style.justifyContent = "center";
+modal.style.alignItems = "center";
+modal.style.display = "flex";
+modal.style.display = "none";
+
+const modalImg = document.createElement("img");
+modalImg.style.maxWidth = "90%";
+modalImg.style.maxHeight = "90%";
+modalImg.style.borderRadius = "10px";
+modalImg.style.boxShadow = "0 4px 8px rgba(0,0,0,0.5)";
+modalImg.style.objectFit = "contain";
+modal.appendChild(modalImg);
+
+document.body.appendChild(modal);
+
+function openImage(src) {
+    modalImg.src = src;
+    modal.style.display = "flex";
+}
+
+modal.addEventListener("click", () => {
+    modal.style.display = "none";
+});
