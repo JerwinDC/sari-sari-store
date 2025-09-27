@@ -121,7 +121,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         const img = document.createElement("img");
                         img.src = item.image;
                         img.style.cursor = "pointer";
-                        img.onclick = () => openImage(item.image);
+                        // Support both click and touch
+                        img.addEventListener("click", () => openImage(item.image));
+                        img.addEventListener("touchstart", () => openImage(item.image));
                         infoDiv.appendChild(img);
                     }
 
