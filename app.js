@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // DOM Elements
+    // ======= DOM Elements =======
     const form = document.getElementById("item-form");
     const inventoryList = document.getElementById("inventory-list");
     const editIdInput = document.getElementById("edit-id");
@@ -10,35 +10,34 @@ document.addEventListener("DOMContentLoaded", () => {
     const importBtn = document.getElementById("import-btn");
     const importFileInput = document.getElementById("import-file");
 
-    // IndexedDB setup
+    // ======= IndexedDB Setup =======
     let db;
     const request = indexedDB.open("inventoryDB", 1);
 
-    request.onupgradeneeded = function(e) {
+    request.onupgradeneeded = (e) => {
         db = e.target.result;
         if (!db.objectStoreNames.contains("items")) {
             db.createObjectStore("items", { keyPath: "id", autoIncrement: true });
         }
     };
 
-    request.onsuccess = function(e) {
+    request.onsuccess = (e) => {
         db = e.target.result;
         displayItems();
-        attachImportExport(); // Attach import/export buttons now that DB is ready
     };
 
-    request.onerror = function(e) {
+    request.onerror = (e) => {
         console.error("IndexedDB error", e);
     };
 
-    // Helper: convert image to base64
+    // ======= Helper: Resize Image to Base64 =======
     async function resizeImage(file, maxWidth = 200, maxHeight = 200) {
         return new Promise((resolve, reject) => {
             const img = new Image();
             const reader = new FileReader();
             reader.readAsDataURL(file);
-            reader.onload = e => img.src = e.target.result;
-            reader.onerror = error => reject(error);
+            reader.onload = (e) => (img.src = e.target.result);
+            reader.onerror = reject;
             img.onload = () => {
                 let { width, height } = img;
                 if (width > maxWidth || height > maxHeight) {
@@ -56,23 +55,23 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Add/Edit item
-    form.addEventListener("submit", async function(e) {
+    // ======= Add/Edit Item =======
+    form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const name = document.getElementById("name").value;
+        const name = document.getElementById("name").value.trim();
         const price = parseFloat(document.getElementById("price").value);
         const imageFile = document.getElementById("image").files[0];
 
         let imageData = null;
-        if (imageFile) imageData = await resizeImage(imageFile, 200, 200);
+        if (imageFile) imageData = await resizeImage(imageFile);
 
         const tx = db.transaction("items", "readwrite");
         const store = tx.objectStore("items");
-
         const editId = editIdInput.value;
+
         if (editId) {
             const getRequest = store.get(Number(editId));
-            getRequest.onsuccess = function() {
+            getRequest.onsuccess = () => {
                 const item = getRequest.result;
                 item.name = name;
                 item.price = price;
@@ -92,6 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     });
 
+    // ======= Cancel Edit =======
     cancelEditBtn.addEventListener("click", () => {
         form.reset();
         editIdInput.value = "";
@@ -99,18 +99,18 @@ document.addEventListener("DOMContentLoaded", () => {
         cancelEditBtn.style.display = "none";
     });
 
-    // Display items
+    // ======= Display Items =======
     function displayItems() {
         const filter = searchInput.value.toLowerCase();
         const tx = db.transaction("items", "readonly");
         const store = tx.objectStore("items");
         const request = store.getAll();
 
-        request.onsuccess = function() {
+        request.onsuccess = () => {
             inventoryList.innerHTML = "";
             request.result
                 .filter(item => item.name.toLowerCase().includes(filter))
-                .forEach(item => {
+                .forEach((item) => {
                     const div = document.createElement("div");
                     div.className = "inventory-item";
 
@@ -163,21 +163,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     searchInput.addEventListener("input", displayItems);
 
-    // ================= IMPORT / EXPORT ==================
-
-    function attachImportExport() {
-    const exportBtn = document.getElementById("export-btn");
-    const importBtn = document.getElementById("import-btn");
-    const importFileInput = document.getElementById("import-file");
-
-    // Export
+    // ======= Import/Export =======
     exportBtn.addEventListener("click", () => {
         const tx = db.transaction("items", "readonly");
         const store = tx.objectStore("items");
         const req = store.getAll();
         req.onsuccess = () => {
-            const dataStr = JSON.stringify(req.result, null, 2);
-            const blob = new Blob([dataStr], { type: "application/json" });
+            const blob = new Blob([JSON.stringify(req.result, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
@@ -187,19 +179,22 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     });
 
-    // Import
     importBtn.addEventListener("click", () => importFileInput.click());
 
     importFileInput.addEventListener("change", (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
         const reader = new FileReader();
         reader.onload = (event) => {
             try {
                 const items = JSON.parse(event.target.result);
                 const tx = db.transaction("items", "readwrite");
                 const store = tx.objectStore("items");
-                items.forEach(item => delete item.id && store.add(item));
+                items.forEach(item => {
+                    delete item.id; // remove existing id
+                    store.add(item);
+                });
                 tx.oncomplete = () => {
                     displayItems();
                     importFileInput.value = "";
@@ -207,27 +202,42 @@ document.addEventListener("DOMContentLoaded", () => {
                 };
             } catch (err) {
                 console.error("Import failed", err);
-                alert("Failed to import inventory.");
+                alert("Failed to import inventory. Check file format.");
             }
         };
         reader.readAsText(file);
     });
-}
 
-
-    // Modal for image zoom
+    // ======= Modal for Image Zoom =======
     const modal = document.createElement("div");
     modal.id = "image-modal";
-    modal.style.cssText = "display:none;position:fixed;z-index:999;left:0;top:0;width:100%;height:100%;background-color:rgba(0,0,0,0.8);justify-content:center;align-items:center;display:flex;";
+    modal.style.cssText = `
+        display: none;
+        position: fixed;
+        z-index: 999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.8);
+        justify-content: center;
+        align-items: center;
+    `;
     const modalImg = document.createElement("img");
-    modalImg.style.cssText = "max-width:90%;max-height:90%;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,0.5);object-fit:contain;";
+    modalImg.style.cssText = `
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        object-fit: contain;
+    `;
     modal.appendChild(modalImg);
     document.body.appendChild(modal);
 
-    window.openImage = function(src) {
+    window.openImage = (src) => {
         modalImg.src = src;
         modal.style.display = "flex";
     };
 
-    modal.addEventListener("click", () => modal.style.display = "none");
+    modal.addEventListener("click", () => (modal.style.display = "none"));
 });
