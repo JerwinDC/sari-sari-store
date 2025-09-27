@@ -1,0 +1,136 @@
+/* General */
+body {
+    font-family: Verdana, Arial, sans-serif;
+    background-color: #FFF8E7;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 480px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* Titles */
+h1, h2 {
+    text-align: center;
+    color: #FF6B35;
+}
+
+/* Form */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+input[type="text"], input[type="number"], input[type="file"], button {
+    padding: 10px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+input[type="text"]:focus, input[type="number"]:focus {
+    outline: none;
+    box-shadow: 0 2px 6px rgba(255,107,53,0.5);
+}
+
+/* Buttons */
+button {
+    cursor: pointer;
+    background-color: #FF6B35;
+    color: white;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
+button:hover {
+    background-color: #FFA500;
+}
+
+#cancel-edit {
+    background-color: #999999;
+}
+
+#cancel-edit:hover {
+    background-color: #666666;
+}
+
+/* Search */
+#search {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Inventory list */
+#inventory-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Inventory card */
+.inventory-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #FFE4B5;
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.inventory-item img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    margin-right: 10px;
+    border-radius: 8px;
+    border: 1px solid #FFA500;
+}
+
+.item-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+}
+
+/* Card buttons */
+.inventory-item button {
+    margin-left: 5px;
+    font-size: 14px;
+    padding: 6px 10px;
+}
+
+/* Responsive */
+@media(max-width: 480px) {
+    .inventory-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .inventory-item img {
+        margin-bottom: 5px;
+    }
+
+    .item-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .inventory-item button {
+        width: 100%;
+        margin-top: 5px;
+    }
+}
