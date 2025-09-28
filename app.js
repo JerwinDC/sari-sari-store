@@ -184,6 +184,45 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     });
 
+    // ======= Sync from GitHub =======
+    const syncBtn = document.getElementById("sync-btn");
+
+    syncBtn.addEventListener("click", async () => {
+        if (!confirm("Syncing will replace all your current data with the online version. Continue?")) {
+            return;
+        }
+
+        try {
+            const response = await fetch("https://raw.githubusercontent.com/JerwinDC/sari-sari-store/main/inventory.json");
+            if (!response.ok) throw new Error("Failed to fetch data from GitHub");
+
+            const items = await response.json();
+
+            // Clear old data
+            const txClear = db.transaction("items", "readwrite");
+            const storeClear = txClear.objectStore("items");
+            const clearReq = storeClear.clear();
+
+            clearReq.onsuccess = () => {
+                const tx = db.transaction("items", "readwrite");
+                const store = tx.objectStore("items");
+
+                items.forEach(item => {
+                    delete item.id; // ensure new auto IDs
+                    store.add(item);
+                });
+
+                tx.oncomplete = () => {
+                    displayItems();
+                    alert("Data synced successfully!");
+                };
+            };
+        } catch (err) {
+            console.error("Sync failed:", err);
+            alert("Failed to sync data. Please check your internet connection.");
+        }
+    });
+
     importBtn.addEventListener("click", () => importFileInput.click());
 
     importFileInput.addEventListener("change", (e) => {
