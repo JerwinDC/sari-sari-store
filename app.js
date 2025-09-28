@@ -157,6 +157,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function deleteItem(id) {
+    const confirmDelete = confirm("Are you sure you want to delete this item?");
+    if (!confirmDelete) return; // stop if user clicks "Cancel"
+
         const tx = db.transaction("items", "readwrite");
         const store = tx.objectStore("items");
         store.delete(id);
