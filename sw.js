@@ -1,15 +1,14 @@
-const CACHE_NAME = "inventory-cache-v2"; // keep your version
+const CACHE_NAME = "inventory-cache-v3"; // bump version to force update
 const FILES_TO_CACHE = [
-    "/",
-    "/index.html",
-    "/style.css",
-    "/app.js",
-    "/manifest.json",
-    "/icons/icon-192.png",
-    "/icons/icon-512.png"
+    "./index.html",
+    "./style.css",
+    "./app.js",
+    "./manifest.json",
+    "./icons/icon-192.png",
+    "./icons/icon-512.png"
 ];
 
-// Install – cache files
+// Install – cache app shell
 self.addEventListener("install", (event) => {
     console.log("[SW] Installing...");
     event.waitUntil(
@@ -21,39 +20,39 @@ self.addEventListener("install", (event) => {
     self.skipWaiting(); // Activate new SW immediately
 });
 
-// Activate – clean old caches
+// Activate – remove old caches
 self.addEventListener("activate", (event) => {
     console.log("[SW] Activating...");
     event.waitUntil(
         caches.keys().then((keys) =>
             Promise.all(
-                keys
-                    .filter((key) => key !== CACHE_NAME)
-                    .map((key) => caches.delete(key))
+                keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
             )
         )
     );
     self.clients.claim();
 });
 
-// Fetch – serve cached files first, fallback to network
+// Fetch – serve from cache, then network fallback
 self.addEventListener("fetch", (event) => {
     event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
-            if (cachedResponse) return cachedResponse;
+            if (cachedResponse) {
+                return cachedResponse;
+            }
 
             return fetch(event.request)
                 .then((networkResponse) => {
                     // Cache new requests dynamically
                     return caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, networkResponse.clone()); // fixed
+                        cache.put(event.request, networkResponse.clone());
                         return networkResponse;
                     });
                 })
                 .catch(() => {
-                    // Offline fallback
+                    // Offline fallback for HTML
                     if (event.request.destination === "document") {
-                        return caches.match("/index.html");
+                        return caches.match("./index.html");
                     }
                 });
         })
