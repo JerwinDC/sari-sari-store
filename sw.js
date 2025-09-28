@@ -1,5 +1,6 @@
-const CACHE_NAME = "inventory-cache-v2"; // bump version to force update
+const CACHE_NAME = "inventory-cache-v2"; // keep your version
 const FILES_TO_CACHE = [
+    "/",
     "/index.html",
     "/style.css",
     "/app.js",
@@ -45,12 +46,12 @@ self.addEventListener("fetch", (event) => {
                 .then((networkResponse) => {
                     // Cache new requests dynamically
                     return caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request.url, networkResponse.clone());
+                        cache.put(event.request, networkResponse.clone()); // fixed
                         return networkResponse;
                     });
                 })
                 .catch(() => {
-                    // Optional offline fallback for HTML pages
+                    // Offline fallback
                     if (event.request.destination === "document") {
                         return caches.match("/index.html");
                     }
