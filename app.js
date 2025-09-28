@@ -1,9 +1,9 @@
 // ======= Service Worker Registration =======
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker
-    .register("./sw.js")
-    .then(() => console.log("Service Worker Registered"))
-    .catch(err => console.error("SW registration failed:", err));
+    navigator.serviceWorker
+        .register("./sw.js")
+        .then(() => console.log("Service Worker Registered"))
+        .catch(err => console.error("SW registration failed:", err));
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const exportBtn = document.getElementById("export-btn");
     const importBtn = document.getElementById("import-btn");
     const importFileInput = document.getElementById("import-file");
+    const syncBtn = document.getElementById("sync-btn");
 
     // ======= IndexedDB Setup =======
     let db;
@@ -44,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const img = new Image();
             const reader = new FileReader();
             reader.readAsDataURL(file);
-            reader.onload = (e) => (img.src = e.target.result);
+            reader.onload = (e) => img.src = e.target.result;
             reader.onerror = reject;
             img.onload = () => {
                 let { width, height } = img;
@@ -128,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (item.image) {
                         const img = document.createElement("img");
                         img.src = item.image;
-                        img.style.cursor = "pointer";
+                        img.alt = item.name;
                         // Support both click and touch
                         img.addEventListener("click", () => openImage(item.image));
                         img.addEventListener("touchstart", () => openImage(item.image));
@@ -136,20 +137,38 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
 
                     const text = document.createElement("span");
-                    text.textContent = `${item.name} - ₱${item.price.toFixed(2)}`;
+                    text.className = "name";
+                    text.textContent = item.name;
+
+                    const priceBadge = document.createElement("span");
+                    priceBadge.className = "price-badge";
+                    priceBadge.textContent = `₱${item.price.toFixed(2)}`;
+
                     infoDiv.appendChild(text);
+                    infoDiv.appendChild(priceBadge);
 
                     div.appendChild(infoDiv);
 
+                    // Card buttons
+                    const cardButtons = document.createElement("div");
+                    cardButtons.className = "card-buttons";
+
                     const editBtn = document.createElement("button");
-                    editBtn.textContent = "Edit";
+                    editBtn.className = "icon-btn";
+                    editBtn.textContent = "✏️";
+                    editBtn.title = "Edit Item";
                     editBtn.onclick = () => editItem(item);
-                    div.appendChild(editBtn);
 
                     const deleteBtn = document.createElement("button");
-                    deleteBtn.textContent = "Delete";
+                    deleteBtn.className = "icon-btn";
+                    deleteBtn.textContent = "🗑️";
+                    deleteBtn.title = "Delete Item";
                     deleteBtn.onclick = () => deleteItem(item.id);
-                    div.appendChild(deleteBtn);
+
+                    cardButtons.appendChild(editBtn);
+                    cardButtons.appendChild(deleteBtn);
+
+                    div.appendChild(cardButtons);
 
                     inventoryList.appendChild(div);
                 });
@@ -165,8 +184,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function deleteItem(id) {
-    const confirmDelete = confirm("Are you sure you want to delete this item?");
-    if (!confirmDelete) return; // stop if user clicks "Cancel"
+        const confirmDelete = confirm("Are you sure you want to delete this item?");
+        if (!confirmDelete) return;
 
         const tx = db.transaction("items", "readwrite");
         const store = tx.objectStore("items");
@@ -190,45 +209,6 @@ document.addEventListener("DOMContentLoaded", () => {
             a.click();
             URL.revokeObjectURL(url);
         };
-    });
-
-    // ======= Sync from GitHub =======
-    const syncBtn = document.getElementById("sync-btn");
-
-    syncBtn.addEventListener("click", async () => {
-        if (!confirm("Syncing will replace all your current data with the online version. Continue?")) {
-            return;
-        }
-
-        try {
-            const response = await fetch("https://raw.githubusercontent.com/JerwinDC/sari-sari-store/main/inventory.json");
-            if (!response.ok) throw new Error("Failed to fetch data from GitHub");
-
-            const items = await response.json();
-
-            // Clear old data
-            const txClear = db.transaction("items", "readwrite");
-            const storeClear = txClear.objectStore("items");
-            const clearReq = storeClear.clear();
-
-            clearReq.onsuccess = () => {
-                const tx = db.transaction("items", "readwrite");
-                const store = tx.objectStore("items");
-
-                items.forEach(item => {
-                    delete item.id; // ensure new auto IDs
-                    store.add(item);
-                });
-
-                tx.oncomplete = () => {
-                    displayItems();
-                    alert("Data synced successfully!");
-                };
-            };
-        } catch (err) {
-            console.error("Sync failed:", err);
-            alert("Failed to sync data. Please check your internet connection.");
-        }
     });
 
     importBtn.addEventListener("click", () => importFileInput.click());
@@ -260,6 +240,39 @@ document.addEventListener("DOMContentLoaded", () => {
         reader.readAsText(file);
     });
 
+    // ======= Sync from GitHub =======
+    syncBtn.addEventListener("click", async () => {
+        if (!confirm("Syncing will replace all your current data with the online version. Continue?")) return;
+
+        try {
+            const response = await fetch("https://raw.githubusercontent.com/JerwinDC/sari-sari-store/main/inventory.json");
+            if (!response.ok) throw new Error("Failed to fetch data from GitHub");
+
+            const items = await response.json();
+
+            // Clear old data
+            const txClear = db.transaction("items", "readwrite");
+            const storeClear = txClear.objectStore("items");
+            const clearReq = storeClear.clear();
+
+            clearReq.onsuccess = () => {
+                const tx = db.transaction("items", "readwrite");
+                const store = tx.objectStore("items");
+                items.forEach(item => {
+                    delete item.id;
+                    store.add(item);
+                });
+                tx.oncomplete = () => {
+                    displayItems();
+                    alert("Data synced successfully!");
+                };
+            };
+        } catch (err) {
+            console.error("Sync failed:", err);
+            alert("Failed to sync data. Please check your internet connection.");
+        }
+    });
+
     // ======= Modal for Image Zoom =======
     const modal = document.createElement("div");
     modal.id = "image-modal";
@@ -280,7 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
         max-width: 90%;
         max-height: 90%;
         border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.5);
         object-fit: contain;
     `;
     modal.appendChild(modalImg);
@@ -291,5 +304,5 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.style.display = "flex";
     };
 
-    modal.addEventListener("click", () => (modal.style.display = "none"));
+    modal.addEventListener("click", () => modal.style.display = "none");
 });

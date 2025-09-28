@@ -4,24 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sari-Sari Store Inventory</title>
+    
+    <!-- Styles -->
     <link rel="stylesheet" href="style.css">
+    
+    <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#FF6B35">
-    <link rel="icon" href="icon/icons/icon-192.png" type="image/png">
+    <meta name="theme-color" content="#FF7043">
+    <link rel="icon" href="icons/icon-192.png" type="image/png">
 </head>
 <body>
     <div class="container">
+        <!-- Title -->
         <h1>Tita Jean Sari-Sari Store Inventory</h1>
 
+        <!-- Add/Edit Item Form -->
         <form id="item-form">
-          <input type="hidden" id="edit-id"> <!-- For editing -->
-          <input type="text" id="name" placeholder="Item Name" required>
-          <input type="number" id="price" placeholder="Price" required>
-          <input type="file" id="image" accept="image/*" capture="environment">
-          <button type="submit" id="submit-btn">Add Item</button>
-          <button type="button" id="cancel-edit" style="display:none;">Cancel Edit</button>
+            <input type="hidden" id="edit-id">
+            <input type="text" id="name" placeholder="Item Name" required>
+            <input type="number" id="price" placeholder="Price" required>
+            <input type="file" id="image" accept="image/*" capture="environment">
+
+            <div class="form-buttons">
+                <button type="submit" id="submit-btn">Add Item</button>
+                <button type="button" id="cancel-edit" style="display:none;">Cancel Edit</button>
+            </div>
         </form>
 
+        <!-- Action Buttons -->
         <div class="buttons">
             <button id="export-btn">Export Inventory</button>
             <input type="file" id="import-file" style="display:none;">
@@ -29,13 +39,17 @@
             <button id="sync-btn">Sync from Online</button>
         </div>
 
+        <!-- Search -->
         <input type="text" id="search" placeholder="Search items...">
 
+        <!-- Inventory List -->
         <h2>Inventory List</h2>
-        <div id="inventory-list"></div>
-
+        <div id="inventory-list">
+            <!-- Inventory cards are generated here dynamically via app.js -->
+        </div>
     </div>
 
+    <!-- JS -->
     <script src="app.js"></script>
 </body>
 </html>

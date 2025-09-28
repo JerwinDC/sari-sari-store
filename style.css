@@ -1,7 +1,7 @@
-/* General */
+/* ===== General ===== */
 body {
     font-family: Verdana, Arial, sans-serif;
-    background-color: #FFF8E7;
+    background-color: #FFF9F2; /* Modern light background */
     margin: 0;
     padding: 0;
 }
@@ -15,129 +15,254 @@ body {
 /* Titles */
 h1, h2 {
     text-align: center;
-    color: #FF6B35;
-}
-
-/* Form */
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    color: #FF7043; /* Modern accent color */
     margin-bottom: 20px;
 }
 
-input[type="text"], input[type="number"], input[type="file"], button {
-    padding: 10px;
-    font-size: 16px;
-    border: none;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+/* ===== Form ===== */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
 }
 
-input[type="text"]:focus, input[type="number"]:focus {
+input[type="text"],
+input[type="number"],
+input[type="file"],
+button {
+    padding: 12px;
+    font-size: 17px;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+    transition: box-shadow 0.2s, transform 0.1s;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus {
     outline: none;
-    box-shadow: 0 2px 6px rgba(255,107,53,0.5);
+    box-shadow: 0 3px 12px rgba(255,112,67,0.45);
+}
+
+/* Form buttons container */
+.form-buttons {
+    display: flex;
+    flex-direction: column; /* Stack buttons on mobile */
+    gap: 12px;
+}
+
+.form-buttons button {
+    flex: 1; /* Stretch full width */
+    font-size: 16px;
+    padding: 12px;
+    border-radius: 12px;
+}
+
+@media(min-width: 481px) {
+    .form-buttons {
+        flex-direction: row; /* Row on larger screens */
+    }
 }
 
 /* Buttons */
 button {
     cursor: pointer;
-    background-color: #FF6B35;
-    color: white;
-    font-weight: bold;
-    transition: background-color 0.2s ease;
+    background: linear-gradient(135deg, #FF7043, #FF8A65);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.12);
+    transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
 }
 
 button:hover {
-    background-color: #FFA500;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 #cancel-edit {
-    background-color: #999999;
+    background-color: #BDBDBD;
 }
 
 #cancel-edit:hover {
-    background-color: #666666;
+    background-color: #9E9E9E;
 }
 
-/* Search */
+/* ===== Search ===== */
 #search {
     width: 100%;
-    padding: 10px;
-    margin: 20px 0 15px 0; /* top margin added to separate from buttons */
+    padding: 12px;
+    margin: 20px 0 15px 0;
     font-size: 16px;
-    border-radius: 8px;
+    border-radius: 12px;
     border: none;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    box-sizing: border-box; /* ensures padding doesn't overflow */
+    box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+    box-sizing: border-box;
 }
 
-/* Inventory list */
-#inventory-list {
+/* ===== Action Buttons ===== */
+.buttons {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: column; /* Stack buttons on mobile */
+    gap: 12px;
+    margin-bottom: 15px;
 }
 
-/* Inventory card */
+.buttons button {
+    flex: 1; /* Full width */
+}
+
+@media(min-width: 481px) {
+    .buttons {
+        flex-direction: row; /* Row on larger screens */
+    }
+}
+
+/* ===== Inventory Card Styles ===== */
 .inventory-item {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: #FFE4B5;
-    padding: 10px;
-    border-radius: 12px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    flex-direction: column; /* Stack on mobile */
+    align-items: flex-start;
+    background: linear-gradient(145deg, #FFF3E0, #FFE0B2);
+    padding: 18px;
+    border-radius: 18px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    gap: 12px;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: fadeInUp 0.3s forwards;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
+.inventory-item:hover {
+    box-shadow: 0 10px 20px rgba(0,0,0,0.18);
+    transform: translateY(-2px);
+}
+
+.inventory-item:active {
+    transform: scale(0.97);
+}
+
+/* Item image */
 .inventory-item img {
-    width: 50px;
-    height: 50px;
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
     object-fit: cover;
-    margin-right: 10px;
-    border-radius: 8px;
-    border: 1px solid #FFA500;
+    border: 2px solid #FF8A65;
+    cursor: pointer;
 }
 
+/* Item info (name + price) */
 .item-info {
-    flex: 1;
     display: flex;
-    align-items: center;
-    gap: 10px;
+    flex-direction: column;
+    gap: 6px;
     font-weight: bold;
+    width: 100%;
 }
 
-/* Card buttons */
-.inventory-item button {
-    margin-left: 5px;
-    font-size: 14px;
-    padding: 6px 10px;
+.item-info span.name {
+    font-size: 17px;
+    color: #333;
 }
 
-/* Responsive */
-@media(max-width: 480px) {
+.item-info .price-badge {
+    display: inline-block;
+    background-color: #FF7043;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* Card buttons (Edit/Delete) */
+.inventory-item .card-buttons {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.inventory-item .card-buttons button {
+    flex: 1; /* Stretch buttons horizontally */
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 14px;
+}
+
+.inventory-item .card-buttons button.icon-btn {
+    padding: 10px;
+    font-size: 20px;
+    text-align: center;
+}
+
+/* ===== Responsive adjustments ===== */
+@media(min-width: 481px) {
     .inventory-item {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row; /* Row layout for desktop/tablet */
+        align-items: center;
     }
 
     .inventory-item img {
-        margin-bottom: 5px;
+        margin-right: 16px;
     }
 
     .item-info {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
     }
 
-    .inventory-item button {
-        width: 100%;
-        margin-top: 5px;
+    .inventory-item .card-buttons {
+        width: auto;
     }
 }
 
-.buttons {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px; /* space below buttons */
+/* ===== Modal & Animations ===== */
+#image-modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+    animation: fadeModal 0.25s ease-out forwards;
+}
+
+#image-modal img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    transform: scale(0.95);
+    animation: scaleUp 0.25s ease-out forwards;
+}
+
+/* Keyframes */
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeModal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+    from { transform: scale(0.95); }
+    to { transform: scale(1); }
 }
